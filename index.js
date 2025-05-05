@@ -16,7 +16,7 @@ const app = express();
 
 const Joi = require('joi');
 
-const expireTime = 24 * 60 * 60 * 1000; // 24 hours
+const expireTime = 1 * 60 * 60 * 1000; // 1 hour
 
 const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_user = process.env.MONGODB_USER;
@@ -131,9 +131,11 @@ app.post('/submitUser', async (req, res) => {
 
     await userCollection.insertOne({username: username, email: email, password: hashedPassword});
     console.log("Inserted user");
+    console.log("successfully created user");
 
-    var html = "successfully created user";
-    res.send(html);
+    res.redirect('/loggedin');
+
+    
 
 });
 
@@ -191,6 +193,10 @@ app.get('/loginfail', (req, res) => {
 });
 
 app.get('/loggedin', (req, res) => {
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+    }
+
     const username = req.session.username;
 
     var html = `
@@ -221,7 +227,7 @@ const catimage = () => {
 app.get('/members', (req, res) => {
     if (!req.session.authenticated) {
         console.log("user is not authenticated");
-        res.redirect('/login');
+        res.redirect('/');
         return;
     }
 
