@@ -249,6 +249,11 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
+//WHile using express v5, use this 
+app.get('*dummy', (req, res) => {
+    res.status(404);
+    res.send("404 - No page exists!")
+});
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
