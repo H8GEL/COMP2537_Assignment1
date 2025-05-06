@@ -123,7 +123,7 @@ app.post('/submitUser', async (req, res) => {
         var html = `
             <h1>${validationResult.error.details[0].message}</h1>
             <a href='/signup'>Try again</a>`;
-            res.send(html);
+        res.send(html);
         return;
     }
 
@@ -133,10 +133,12 @@ app.post('/submitUser', async (req, res) => {
     console.log("Inserted user");
     console.log("successfully created user");
 
-    res.redirect('/loggedin');
 
-    
+    req.session.authenticated = true;
+    req.session.username = username;
+    req.session.cookie.maxAge = expireTime;
 
+    res.redirect('/members');
 });
 
 app.get('/login', (req, res) => {
@@ -195,21 +197,24 @@ app.get('/loginfail', (req, res) => {
 app.get('/loggedin', (req, res) => {
     if (!req.session.authenticated) {
         res.redirect('/login');
-    }
-
-    const username = req.session.username;
-
-    var html = `
-        <h1>Hello, ${username}</h1>
-        <form action='/members'>
-            <button>Go to members area</button>
-        </form>
-        <form action='/logout'>
-            <button>Logout</button>
-        </form>`;
         
-        res.send(html);
+    } else {
 
+        const username = req.session.username;
+
+        var html = `
+            <h1>Hello, ${username}</h1>
+            <form action='/members'>
+                <button>Go to members area</button>
+            </form>
+            <form action='/logout'>
+                <button>Logout</button>
+            </form>`;
+            
+            res.send(html);
+
+
+    }
 
 });
 
