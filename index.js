@@ -28,12 +28,12 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 app.use(express.static(__dirname + "/public"));
 
-var {database} = require('./databaseConnection.js');
+var { database } = require('./databaseConnection.js');
 
 const userCollection = database.db(mongodb_database).collection('users');
 
 //important to parse body text
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 
 var mongoStore = MongoStore.create({
     mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}?retryWrites=true&w=majority`,
@@ -80,7 +80,7 @@ app.get('/nosql-injection', async (req, res) => {
         return;
     }
 
-    const result = await userCollection.findOne({username: username}).project({username: 1, password: 1, _id: 1}).toArray();
+    const result = await userCollection.findOne({ username: username }).project({ username: 1, password: 1, _id: 1 }).toArray();
 
     console.log(result);
 
@@ -117,7 +117,7 @@ app.post('/submitUser', async (req, res) => {
             password: Joi.string().max(20).required()
         });
 
-    const validationResult = schema.validate({username, email, password});
+    const validationResult = schema.validate({ username, email, password });
     if (validationResult.error != null) {
         console.log(validationResult.error);
         var html = `
@@ -127,9 +127,24 @@ app.post('/submitUser', async (req, res) => {
         return;
     }
 
+    const existingUser = await userCollection.findOne({
+        $or: [{ username: username }, { email: email }]
+    });
+
+    if (existingUser) {
+        var html = `<h1>Username or email already exists. Please try again.</h1>
+            <a href='/signup'>Try again</a>`;
+
+        res.send(html);
+        return;
+    }
+
+
+
+
     var hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    await userCollection.insertOne({username: username, email: email, password: hashedPassword});
+    await userCollection.insertOne({ username: username, email: email, password: hashedPassword });
     console.log("Inserted user");
     console.log("successfully created user");
 
@@ -167,7 +182,7 @@ app.post('/loggingin', async (req, res) => {
         return;
     }
 
-    const result = await userCollection.find({username: username}).project({username: 1, password: 1, _id: 1}).toArray();
+    const result = await userCollection.find({ username: username }).project({ username: 1, password: 1, _id: 1 }).toArray();
 
     console.log(result);
     if (result.length != 1) {
@@ -200,7 +215,7 @@ app.get('/loginfail', (req, res) => {
 app.get('/loggedin', (req, res) => {
     if (!req.session.authenticated) {
         res.redirect('/login');
-        
+
     } else {
 
         const username = req.session.username;
@@ -213,8 +228,8 @@ app.get('/loggedin', (req, res) => {
             <form action='/logout'>
                 <button>Logout</button>
             </form>`;
-            
-            res.send(html);
+
+        res.send(html);
 
 
     }
