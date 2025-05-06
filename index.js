@@ -146,7 +146,10 @@ app.get('/login', (req, res) => {
         <form action='/loggingin' method='post'>
             <input name='username' type='text' placeholder='username'></input>
             <br><input name='password' type='password' placeholder='password'></input>
-            <br><button>submit</button>
+            <br><button>Submit</button>
+        </form>
+        <form action='/signup'>
+            <button>Sign Up</button>
         </form>`
 
     res.send(html);
